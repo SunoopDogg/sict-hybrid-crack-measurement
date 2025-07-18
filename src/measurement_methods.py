@@ -19,7 +19,8 @@ from intersection_remover import *
 from rasterizing import *
 import csv
 from random import sample
-
+import matplotlib
+matplotlib.use('TkAgg')  # X11 포워딩을 위한 백엔드 설정
 
 # In[2]:
 
@@ -488,7 +489,7 @@ def imshow_components(labels):
 
 
 if __name__ == "__main__":
-    folder_path = "./data_for_crack_width_measurement/field_data"
+    folder_path = "./images"
     mask_paths = sorted(glob.glob(os.path.join(folder_path, '*png')))
     mask_files = []
     for path in mask_paths:
@@ -501,17 +502,20 @@ if __name__ == "__main__":
         pad_mask = np.pad(mask, ((2, 2), (2, 2)), "constant")
         padded_mask.append(pad_mask)
 
-    test_img = padded_mask[38]
+    test_img = padded_mask[3]
+
     skel, dist = morphology.medial_axis(test_img, return_distance=True)
     skeleton_img, graph = skel_pruning_DSE(skel, dist, 75, return_graph=True)
     canny = feature.canny(test_img)
     r, c = np.nonzero(canny)
     ori_B = list(zip(r, c))
+
     test_img_r, skeleton_img_r = remove_intersection(
         test_img, skeleton_img, ori_B, graph, verbose=True)
     canny = feature.canny(test_img_r > 0)
     r, c = np.nonzero(canny)
     B = list(zip(r, c))
+
     r, c = np.nonzero(skeleton_img_r)
     S = list(zip(r, c))
     S.sort(key=lambda x: x[1])
@@ -519,10 +523,18 @@ if __name__ == "__main__":
 
     distance_op, distance_img = op_method(
         S_2, dist, test_img_r, skeleton_img_r, canny, ori_B, verbose=False, visualize=True)
+    cv2.imshow("op_method", distance_img)
+
     distance_hybrid, distance_img = get_width(
         S_2, dist, test_img_r, skeleton_img_r, canny, ori_B, verbose=False, visualize=True)
+    cv2.imshow("Hybrid Method", distance_img)
+
     distance, distance_img = shortest_method(
         S_2, dist, test_img_r, skeleton_img_r, canny, ori_B, verbose=False, visualize=True)
+    cv2.imshow("Shortest Method", distance_img)
+
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
 # In[ ]:
