@@ -56,7 +56,7 @@ def remove_intersection(binary_image, skl, boundary_coords, graph, verbose=False
         print(f"The points that have deg more than 2 are {points}")
     if len(points) > 0:
         for i, point in enumerate(points):
-            r, c = point.astype(np.int)
+            r, c = point.astype(int)
             radius = 0
             while True:
                 circle_points = set(midpoint_circle(r, c, radius))
